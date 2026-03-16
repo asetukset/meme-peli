@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Do You Meme? 🧠</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --yellow: #FFE234;
+    --black: #111;
+    --white: #FAFAFA;
+    --red: #FF3B3B;
+    --green: #2ECC71;
+    --gray: #E8E8E8;
+    --card-shadow: 4px 4px 0px #111;
+    --font-display: 'Bangers', cursive;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: #f0f0f0;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .app { max-width: 900px; margin: 0 auto; padding: 16px; }
+
+  .header {
+    background: var(--yellow);
+    border: 3px solid var(--black);
+    border-radius: 12px;
+    padding: 16px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--card-shadow);
+  }
+  .logo { font-family: var(--font-display); font-size: 32px; letter-spacing: 1px; color: var(--black); line-height: 1; }
+  .logo span { color: var(--red); }
+  .status-badge {
+    background: var(--black);
+    color: var(--yellow);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid var(--black);
+    border-radius: 8px;
+    background: var(--white);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.1s;
+    text-align: center;
+    box-shadow: 2px 2px 0 var(--black);
+  }
+  .tab:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--black); }
+  .tab.active { background: var(--yellow); }
+
+  .card {
+    background: var(--white);
+    border: 2px solid var(--black);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--card-shadow);
+  }
+  .card h2 { font-family: var(--font-display); font-size: 24px; margin-bottom: 12px; letter-spacing: 0.5px; }
+  .card h3 { font-weight: 600; font-size: 15px; margin-bottom: 10px; }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid var(--black);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: var(--font-body);
+    background: var(--white);
+    margin-bottom: 10px;
+    outline: none;
+  }
+  input:focus { border-color: var(--red); box-shadow: 0 0 0 2px rgba(255,59,59,0.2); }
+
+  .btn {
+    padding: 10px 20px;
+    border: 2px solid var(--black);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.1s;
+    box-shadow: 2px 2px 0 var(--black);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--black); }
+  .btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--black); }
+  .btn-primary { background: var(--yellow); }
+  .btn-danger { background: var(--red); color: white; }
+  .btn-success { background: var(--green); color: white; }
+  .btn-dark { background: var(--black); color: var(--yellow); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn:disabled { opacity: 0.5; pointer-events: none; }
+
+  .upload-area {
+    border: 2px dashed var(--black);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--gray);
+    position: relative;
+  }
+  .upload-area:hover { background: var(--yellow); border-style: solid; }
+  .upload-area input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon { font-size: 36px; margin-bottom: 8px; }
+  .upload-text { font-weight: 600; font-size: 15px; }
+  .upload-sub { font-size: 12px; color: #666; margin-top: 4px; }
+
+  .image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 14px; }
+  .image-item {
+    position: relative;
+    border: 2px solid var(--black);
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 1;
+    background: var(--gray);
+    box-shadow: 2px 2px 0 var(--black);
+  }
+  .image-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .image-item .remove-btn {
+    position: absolute; top: 4px; right: 4px;
+    background: var(--red); color: white;
+    border: 1px solid var(--black);
+    border-radius: 50%; width: 22px; height: 22px;
+    font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+  }
+
+  .caption-grid { display: grid; gap: 8px; }
+  .caption-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border: 2px solid var(--black);
+    border-radius: 8px;
+    background: var(--white);
+  }
+  .caption-text { flex: 1; font-size: 14px; }
+  .caption-num {
+    background: var(--black); color: var(--yellow);
+    font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+  }
+
+  .qr-section {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px; gap: 12px;
+  }
+  #qr-container {
+    border: 3px solid var(--black);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    background: white;
+    padding: 10px;
+    display: inline-block;
+  }
+  .room-code {
+    font-family: var(--font-display);
+    font-size: 36px;
+    letter-spacing: 6px;
+    color: var(--black);
+    background: var(--yellow);
+    padding: 8px 24px;
+    border: 2px solid var(--black);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 var(--black);
+  }
+
+  .player-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .player-chip {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    border: 2px solid var(--black);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--white);
+    box-shadow: 1px 1px 0 var(--black);
+  }
+  .player-avatar {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    color: var(--black);
+  }
+
+  .meme-display {
+    border: 3px solid var(--black);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: var(--card-shadow);
+    position: relative;
+    background: #000;
+    text-align: center;
+    min-height: 240px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .meme-display img {
+    max-width: 100%; max-height: 340px;
+    display: block; margin: 0 auto;
+  }
+  .meme-caption-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.75);
+    padding: 10px 16px;
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: white;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0 black;
+  }
+  .no-image-placeholder {
+    padding: 40px;
+    text-align: center;
+    color: #aaa;
+  }
+  .no-image-placeholder .big-icon { font-size: 60px; }
+
+  .caption-select-grid { display: grid; gap: 8px; }
+  .caption-option {
+    padding: 12px 16px;
+    border: 2px solid var(--black);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--white);
+    box-shadow: 2px 2px 0 var(--black);
+    transition: all 0.1s;
+    text-align: left;
+    width: 100%;
+    font-family: var(--font-body);
+  }
+  .caption-option:hover { background: var(--yellow); transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--black); }
+  .caption-option.selected { background: var(--yellow); border-color: var(--red); }
+  .caption-option.submitted { opacity: 0.5; pointer-events: none; }
+
+  .vote-card {
+    border: 2px solid var(--black);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    cursor: pointer;
+    box-shadow: var(--card-shadow);
+    transition: all 0.15s;
+  }
+  .vote-card:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--black); }
+  .vote-card.voted { border-color: var(--green); box-shadow: 4px 4px 0 var(--green); }
+  .vote-card-img { background: #000; min-height: 150px; display: flex; align-items: center; justify-content: center; position: relative; }
+  .vote-card-img img { max-width: 100%; max-height: 180px; }
+  .vote-card-caption {
+    padding: 10px 14px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    background: var(--white);
+    letter-spacing: 0.5px;
+    border-top: 2px solid var(--black);
+  }
+  .vote-card-footer {
+    padding: 6px 14px;
+    font-size: 12px;
+    color: #666;
+    background: var(--gray);
+    border-top: 1px solid var(--black);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .result-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    border: 2px solid var(--black);
+    border-radius: 8px;
+    background: var(--white);
+    margin-bottom: 10px;
+    box-shadow: 2px 2px 0 var(--black);
+  }
+  .result-rank {
+    font-family: var(--font-display);
+    font-size: 28px;
+    min-width: 36px;
+    text-align: center;
+  }
+  .result-votes {
+    margin-left: auto;
+    background: var(--yellow);
+    border: 2px solid var(--black);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .winner-banner {
+    background: var(--yellow);
+    border: 3px solid var(--black);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 16px;
+    box-shadow: var(--card-shadow);
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: 1px;
+  }
+
+  .score-table { width: 100%; border-collapse: collapse; }
+  .score-table th, .score-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--gray); font-size: 14px; }
+  .score-table th { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #666; }
+  .score-bar { height: 6px; background: var(--yellow); border-radius: 3px; border: 1px solid var(--black); }
+
+  .step-indicator { display: flex; gap: 6px; margin-bottom: 16px; align-items: center; }
+  .step { width: 28px; height: 6px; border-radius: 3px; background: var(--gray); }
+  .step.done { background: var(--green); }
+  .step.active { background: var(--yellow); }
+  .step-label { font-size: 12px; color: #666; margin-left: 8px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+  .notice {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .notice-info { background: #E8F4FD; border: 1px solid #90CDF4; color: #2B6CB0; }
+  .notice-warn { background: #FFFBEB; border: 1px solid #F6E05E; color: #975A16; }
+  .notice-success { background: #F0FFF4; border: 1px solid #9AE6B4; color: #22543D; }
+
+  .waiting-animation { display: flex; gap: 6px; justify-content: center; padding: 20px; }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--yellow); border: 2px solid var(--black);
+    animation: bounce 1s infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-10px)} }
+
+  .hidden { display: none !important; }
+
+  .caption-input-row { display: flex; gap: 8px; }
+  .caption-input-row input { flex: 1; margin-bottom: 0; }
+
+  .round-timer {
+    font-family: var(--font-display);
+    font-size: 42px;
+    color: var(--black);
+    text-align: center;
+    line-height: 1;
+  }
+  .round-timer.warning { color: var(--red); }
+  .timer-bar-wrap { background: var(--gray); border-radius: 4px; height: 8px; overflow: hidden; border: 1px solid var(--black); margin-top: 6px; }
+  .timer-bar { height: 100%; background: var(--yellow); border-radius: 4px; transition: width 1s linear; }
+  .timer-bar.warning { background: var(--red); }
+
+  .round-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .round-badge { font-family: var(--font-display); font-size: 20px; }
+
+  .firebase-status { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 8px 14px; border-radius: 8px; background: #f9f9f9; margin-top: 12px; border: 1px solid #ddd; }
+  .fb-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .fb-dot.ok { background: var(--green); }
+  .fb-dot.err { background: var(--red); }
+  .fb-dot.loading { background: var(--yellow); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .scroll-list { max-height: 260px; overflow-y: auto; border: 1px solid var(--gray); border-radius: 8px; padding: 6px; }
+
+  .join-url-box {
+    background: var(--gray);
+    border: 1px solid var(--black);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-family: monospace;
+    word-break: break-all;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <div class="header">
+    <div class="logo">WHAT DO YOU <span>MEME?</span> 🧠</div>
+    <div class="status-badge" id="game-status-badge">Valikko</div>
+  </div>
+
+  <div class="tabs" id="main-tabs">
+    <button class="tab active" onclick="showView('host')">🎮 Isäntä (Host)</button>
+    <button class="tab" onclick="showView('join')">📱 Liity peliin</button>
+  </div>
+
+  <!-- HOST VIEW -->
+  <div id="host-view">
+
+    <div class="card" id="fb-config-card">
+      <h2>🔥 Firebase-asetukset</h2>
+      <div class="notice notice-info">
+        Syötä Firebase-projektin tiedot. Projekti: <strong>memepeli</strong>
+      </div>
+      <div class="two-col">
+        <div>
+          <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Database URL</label>
+          <input type="text" id="fb-url" value="https://memepeli-default-rtdb.europe-west1.firebasedatabase.app" placeholder="https://memepeli-default-rtdb.europe-west1.firebasedatabase.app" />
+        </div>
+        <div>
+          <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">API Key</label>
+          <input type="text" id="fb-apikey" placeholder="AIzaSyDleXYkGxxQ72CKGHWFCDyLFKGr6yZlbP0" />
+        </div>
+      </div>
+      <button class="btn btn-dark" onclick="connectFirebase()">⚡ Yhdistä Firebase</button>
+      <div class="firebase-status hidden" id="fb-status">
+        <div class="fb-dot loading" id="fb-dot"></div>
+        <span id="fb-status-text">Yhdistetään...</span>
+      </div>
+    </div>
+
+    <div id="host-steps" class="hidden">
+      <div class="step-indicator">
+        <div class="step active" id="step-1"></div>
+        <div class="step" id="step-2"></div>
+        <div class="step" id="step-3"></div>
+        <div class="step" id="step-4"></div>
+        <span class="step-label" id="step-label">Vaihe 1: Lataa kuvat</span>
+      </div>
+
+      <div class="card" id="s1-images">
+        <h2>🖼️ Kuvat</h2>
+        <div class="upload-area" id="upload-area">
+          <input type="file" id="image-input" accept="image/*" multiple onchange="handleImageUpload(event)" />
+          <div class="upload-icon">📸</div>
+          <div class="upload-text">Vedä kuvia tähän tai klikkaa</div>
+          <div class="upload-sub">PNG, JPG, GIF – max 5MB per kuva</div>
+        </div>
+        <div class="image-grid" id="image-grid"></div>
+        <p style="font-size:13px;color:#666;margin-top:10px" id="img-count">0 kuvaa lisätty</p>
+      </div>
+
+      <div class="card" id="s2-captions">
+        <h2>💬 Kuvatekstit</h2>
+        <div class="caption-input-row">
+          <input type="text" id="caption-input" placeholder="Lisää hauska kuvateksti..." onkeydown="if(event.key==='Enter')addCaption()" maxlength="80" />
+          <button class="btn btn-primary" onclick="addCaption()">+ Lisää</button>
+        </div>
+        <div class="scroll-list">
+          <div class="caption-grid" id="caption-list"></div>
+        </div>
+        <p style="font-size:13px;color:#666;margin-top:10px" id="cap-count">0 kuvatekstiä</p>
+        <button class="btn btn-sm" onclick="loadDefaultCaptions()" style="margin-top:8px">📋 Lataa oletustekstit</button>
+      </div>
+
+      <div class="card" id="s3-settings">
+        <h2>⚙️ Asetukset</h2>
+        <div class="two-col">
+          <div>
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Kierroksia</label>
+            <input type="number" id="rounds-input" value="5" min="1" max="20" style="width:100px" />
+          </div>
+          <div>
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Aika per kierros (sek)</label>
+            <input type="number" id="timer-input" value="60" min="15" max="180" style="width:100px" />
+          </div>
+        </div>
+        <button class="btn btn-dark" onclick="createRoom()" style="margin-top:8px">🏠 Luo huone &amp; Näytä QR</button>
+      </div>
+
+      <div class="card hidden" id="s4-lobby">
+        <h2>🚪 Odotushuone</h2>
+        <div class="qr-section">
+          <div id="qr-container"></div>
+          <div class="room-code" id="room-code-display">----</div>
+          <p style="font-size:13px;color:#666;text-align:center">Skannaa QR-koodi tai kirjoita koodi peliin</p>
+          <div class="join-url-box" id="join-url-display"></div>
+        </div>
+        <h3>Pelaajat (<span id="player-count">0</span>)</h3>
+        <div class="player-list" id="player-list"></div>
+        <div style="margin-top:16px">
+          <button class="btn btn-success" onclick="startGame()" id="start-btn" disabled>▶ Aloita peli</button>
+          <span style="font-size:12px;color:#666;margin-left:10px">Tarvitaan vähintään 2 pelaajaa</span>
+        </div>
+      </div>
+
+      <div class="card hidden" id="host-round-card">
+        <div class="round-info">
+          <div class="round-badge">Kierros <span id="h-round-num">1</span>/<span id="h-total-rounds">5</span></div>
+          <div>
+            <div class="round-timer" id="h-timer">60</div>
+            <div class="timer-bar-wrap"><div class="timer-bar" id="h-timer-bar" style="width:100%"></div></div>
+          </div>
+        </div>
+        <div class="meme-display" id="host-meme-img">
+          <div class="no-image-placeholder"><div class="big-icon">🖼️</div><p>Kuva latautuu...</p></div>
+        </div>
+        <h3>Vastaukset (<span id="answers-received">0</span>/<span id="answers-expected">0</span>)</h3>
+        <div class="waiting-animation" id="waiting-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <button class="btn btn-primary hidden" onclick="startVoting()" id="vote-btn">🗳️ Aloita äänestys</button>
+      </div>
+
+      <div class="card hidden" id="host-voting-card">
+        <h2>🗳️ Äänestys käynnissä</h2>
+        <p style="font-size:13px;color:#666;margin-bottom:14px">Pelaajat äänestävät puhelimillaan</p>
+        <div id="host-vote-grid"></div>
+        <button class="btn btn-primary hidden" onclick="showRoundResults()" id="results-btn">📊 Näytä tulokset</button>
+      </div>
+
+      <div class="card hidden" id="host-results-card">
+        <h2>📊 Kierroksen tulokset</h2>
+        <div id="round-winner-banner"></div>
+        <div id="round-results-list"></div>
+        <div id="round-scoreboard" style="margin-top:16px"></div>
+        <div style="margin-top:16px;display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="nextRound()" id="next-round-btn">➡ Seuraava kierros</button>
+          <button class="btn btn-danger hidden" onclick="endGame()" id="end-game-btn">🏆 Lopeta peli</button>
+        </div>
+      </div>
+
+      <div class="card hidden" id="host-final-card">
+        <h2>🏆 Lopputulokset!</h2>
+        <div id="final-results"></div>
+        <button class="btn btn-dark" onclick="resetGame()" style="margin-top:16px">🔄 Uusi peli</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JOIN VIEW -->
+  <div id="join-view" class="hidden">
+    <div class="card" id="join-input-card">
+      <h2>📱 Liity peliin</h2>
+      <div class="notice notice-info">Kysy huonekoodi isännältä tai skannaa QR-koodi</div>
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Nimesi</label>
+      <input type="text" id="player-name" placeholder="Esim. Matti" maxlength="16" />
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Huonekoodi</label>
+      <input type="text" id="room-code-input" placeholder="4-kirjaiminen koodi" maxlength="4"
+        style="text-transform:uppercase;letter-spacing:4px;font-size:20px;font-family:'Bangers',cursive"
+        oninput="this.value=this.value.toUpperCase()" />
+      <div class="notice notice-warn hidden" id="join-fb-notice">
+        Firebase API Key tarvitaan myös liittymiseen. <br>
+        <input type="text" id="join-fb-apikey" placeholder="AIzaSy..." style="margin-top:8px" />
+      </div>
+      <button class="btn btn-primary" onclick="joinRoom()">🚪 Liity</button>
+      <div class="notice notice-warn hidden" id="join-error" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card hidden" id="player-lobby">
+      <h2>⏳ Odotetaan isäntää...</h2>
+      <p style="font-size:13px;color:#666;margin-bottom:12px">Peli alkaa pian!</p>
+      <div class="player-list" id="player-lobby-list"></div>
+      <div class="waiting-animation"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    </div>
+
+    <div class="card hidden" id="player-choose-card">
+      <div class="round-info">
+        <div class="round-badge">Kierros <span id="p-round-num">1</span></div>
+        <div>
+          <div class="round-timer" id="p-timer">60</div>
+          <div class="timer-bar-wrap"><div class="timer-bar" id="p-timer-bar" style="width:100%"></div></div>
+        </div>
+      </div>
+      <div class="meme-display" id="player-meme-img">
+        <div class="no-image-placeholder"><div class="big-icon">🖼️</div><p>Latautuu...</p></div>
+      </div>
+      <h3>Valitse paras kuvateksti:</h3>
+      <div class="caption-select-grid" id="player-caption-options"></div>
+      <div class="notice notice-success hidden" id="caption-submitted-msg" style="margin-top:10px">✅ Vastauksesi lähetetty! Odotetaan muita...</div>
+    </div>
+
+    <div class="card hidden" id="player-voting-card">
+      <h2>🗳️ Äänestä!</h2>
+      <p style="font-size:13px;color:#666;margin-bottom:14px">Kumpi yhdistelmä on hauskin?</p>
+      <div id="player-vote-options"></div>
+      <div class="notice notice-success hidden" id="vote-submitted-msg" style="margin-top:10px">✅ Äänesi tallennettu!</div>
+    </div>
+
+    <div class="card hidden" id="player-results-card">
+      <h2>📊 Tulokset</h2>
+      <div id="player-results-content"></div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+// ==================== FIREBASE IMPORTS ====================
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import { getDatabase, ref, set, get, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+
+// ==================== STATE ====================
+let db = null;
+let roomId = null;
+let isHost = false;
+let myPlayerId = null;
+let myPlayerName = '';
+let images = [];
+let captions = [];
+let players = {};
+let roundTimer = null;
+let timerLeft = 60;
+let timerTotal = 60;
+
+// ==================== UTILS ====================
+function uid() { return Math.random().toString(36).slice(2, 10); }
+function randomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+function avatarColors() { return ['#FFE234','#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#FFEAA7','#DDA0DD']; }
+function getPlayerColor(idx) { return avatarColors()[idx % avatarColors().length]; }
+function initials(name) { return (name || '?').slice(0,2).toUpperCase(); }
+function show(id) { const el=document.getElementById(id); if(el) el.classList.remove('hidden'); }
+function hide(id) { const el=document.getElementById(id); if(el) el.classList.add('hidden'); }
+function setStatus(txt) { const el=document.getElementById('game-status-badge'); if(el) el.textContent=txt; }
+
+window.showView = function(v) {
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(v==='host'&&i===0)||(v==='join'&&i===1)));
+  document.getElementById('host-view').classList.toggle('hidden', v!=='host');
+  document.getElementById('join-view').classList.toggle('hidden', v!=='join');
+};
+
+function setStep(n) {
+  [1,2,3,4].forEach(i=>{ const el=document.getElementById('step-'+i); if(!el)return; el.className='step '+(i<n?'done':i===n?'active':''); });
+  const labels=['Vaihe 1: Lataa kuvat','Vaihe 2: Kuvatekstit','Vaihe 3: Asetukset','Vaihe 4: Odotushuone'];
+  const lel=document.getElementById('step-label'); if(lel) lel.textContent=labels[n-1]||'';
+}
+
+// ==================== FIREBASE ====================
+window.connectFirebase = async function() {
+  const url = document.getElementById('fb-url').value.trim();
+  const apikey = document.getElementById('fb-apikey').value.trim();
+  if (!url || !apikey) { alert('Syötä Database URL ja API Key'); return; }
+
+  show('fb-status');
+  document.getElementById('fb-dot').className = 'fb-dot loading';
+  document.getElementById('fb-status-text').textContent = 'Yhdistetään...';
+
+  try {
+    const app = initializeApp({ databaseURL: url, apiKey: apikey, projectId: url.split('//')[1].split('-default')[0] }, 'meme-' + Date.now());
+    db = getDatabase(app);
+    window._db = db;
+    window._dbFns = { ref, set, get, onValue, update, remove };
+
+    onValue(ref(db, '.info/connected'), (snap) => {
+      if (snap.val()) {
+        document.getElementById('fb-dot').className = 'fb-dot ok';
+        document.getElementById('fb-status-text').textContent = 'Yhdistetty ✓';
+        hide('fb-config-card');
+        show('host-steps');
+        setStep(1);
+      }
+    });
+  } catch(e) {
+    document.getElementById('fb-dot').className = 'fb-dot err';
+    document.getElementById('fb-status-text').textContent = 'Virhe: ' + e.message;
+  }
+};
+
+// ==================== IMAGES ====================
+window.handleImageUpload = function(event) {
+  Array.from(event.target.files).forEach(file => {
+    if (file.size > 5*1024*1024) { alert(file.name+' on liian suuri (max 5MB)'); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      images.push({ id: uid(), dataUrl: e.target.result, name: file.name });
+      renderImageGrid();
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+function renderImageGrid() {
+  const grid = document.getElementById('image-grid');
+  grid.innerHTML = images.map(img => `
+    <div class="image-item">
+      <img src="${img.dataUrl}" alt="${img.name}" />
+      <button class="remove-btn" onclick="removeImage('${img.id}')">×</button>
+    </div>
+  `).join('');
+  document.getElementById('img-count').textContent = images.length + ' kuvaa lisätty';
+  if (images.length > 0) setStep(2);
+}
+
+window.removeImage = function(id) {
+  images = images.filter(i => i.id !== id);
+  renderImageGrid();
+};
+
+// ==================== CAPTIONS ====================
+window.addCaption = function() {
+  const inp = document.getElementById('caption-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (captions.includes(val)) { alert('Kuvateksti on jo listalla'); return; }
+  captions.push(val);
+  inp.value = '';
+  renderCaptions();
+  if (captions.length >= 5) setStep(3);
+};
+
+window.removeCaption = function(idx) {
+  captions.splice(idx, 1);
+  renderCaptions();
+};
+
+function renderCaptions() {
+  const list = document.getElementById('caption-list');
+  list.innerHTML = captions.map((c,i) => `
+    <div class="caption-item">
+      <span class="caption-num">#${i+1}</span>
+      <span class="caption-text">${c}</span>
+      <button class="btn btn-sm btn-danger" onclick="removeCaption(${i})">×</button>
+    </div>
+  `).join('');
+  document.getElementById('cap-count').textContent = captions.length + ' kuvatekstiä';
+}
+
+window.loadDefaultCaptions = function() {
+  const defaults = [
+    "Kun ostat halvimman vaihtoehdon",
+    "Maanantai-aamu fiilikset",
+    "Minä viimeisenä suklaakeksejä varastamassa",
+    "Kun äiti pyytää siivoomaan huoneen",
+    "Kokouksessa joka olisi voinut olla sähköposti",
+    "Kun saat tilauksen kaksi kuukautta myöhässä",
+    "Minä yrittäessäni olla aikuinen",
+    "Kun Netflix kysyy oletko vielä paikalla",
+    "Ensimmäinen kahvi aamulla",
+    "Kun huomaat unohtuneesi töihin",
+    "Budjettisuunnitelma vs. todellisuus",
+    "Kun olet dieetillä mutta pitseria tuoksuu",
+    "Minä päättäen nukkua aikaisin",
+    "Viimeiset 5 minuuttia ennen palaveria",
+    "Kun kaveri pyytää lainaan rahaa",
+    "Tietokone juuri ennen tärkeää esitystä",
+    "Kun Google Maps laskee reitin väärin",
+    "Synttärisuunnitelmat vs. varsinainen päivä",
+    "Kun lapsi kysyy miksi",
+    "WiFi-salasana vieraalle selittäen"
+  ];
+  defaults.forEach(d => { if (!captions.includes(d)) captions.push(d); });
+  renderCaptions();
+  setStep(3);
+};
+
+// ==================== ROOM ====================
+window.createRoom = async function() {
+  if (!db) { alert('Yhdistä ensin Firebase!'); return; }
+  if (images.length === 0) { alert('Lisää vähintään 1 kuva!'); return; }
+  if (captions.length < 5) { alert('Lisää vähintään 5 kuvatekstiä!'); return; }
+
+  const rounds = parseInt(document.getElementById('rounds-input').value) || 5;
+  timerTotal = parseInt(document.getElementById('timer-input').value) || 60;
+
+  roomId = randomCode();
+  isHost = true;
+  myPlayerId = 'host-' + uid();
+
+  const gameData = {
+    status: 'lobby',
+    hostId: myPlayerId,
+    rounds,
+    timerSec: timerTotal,
+    currentRound: 0,
+    images: images.map(i => ({ id: i.id, dataUrl: i.dataUrl, name: i.name })),
+    captions,
+    players: {},
+    createdAt: Date.now()
+  };
+
+  try {
+    await set(ref(db, 'rooms/' + roomId), gameData);
+    setStatus('Odotushuone');
+    setStep(4);
+    show('s4-lobby');
+    document.getElementById('room-code-display').textContent = roomId;
+
+    const joinUrl = window.location.href.split('?')[0] + '?room=' + roomId;
+    document.getElementById('join-url-display').textContent = joinUrl;
+
+    // QR Code
+    document.getElementById('qr-container').innerHTML = '';
+    new QRCode(document.getElementById('qr-container'), {
+      text: joinUrl,
+      width: 180, height: 180,
+      colorDark: '#111', colorLight: '#ffffff'
+    });
+
+    listenForPlayers();
+    listenForGameUpdates();
+  } catch(e) {
+    alert('Virhe: ' + e.message);
+  }
+};
+
+// ==================== PLAYER LISTENING ====================
+function listenForPlayers() {
+  onValue(ref(db, 'rooms/' + roomId + '/players'), (snap) => {
+    players = snap.val() || {};
+    renderPlayerList('player-list');
+    renderPlayerList('player-lobby-list');
+    const count = Object.keys(players).length;
+    const el = document.getElementById('player-count');
+    if (el) el.textContent = count;
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) startBtn.disabled = count < 2;
+  });
+}
+
+function renderPlayerList(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const arr = Object.values(players);
+  el.innerHTML = arr.map((p,i) => `
+    <div class="player-chip">
+      <div class="player-avatar" style="background:${getPlayerColor(i)}">${initials(p.name)}</div>
+      ${p.name}
+    </div>
+  `).join('') || '<p style="color:#999;font-size:13px">Ei pelaajia vielä...</p>';
+}
+
+// ==================== GAME FLOW ====================
+window.startGame = async function() {
+  if (Object.keys(players).length < 2) { alert('Tarvitaan vähintään 2 pelaajaa!'); return; }
+  await update(ref(db, 'rooms/' + roomId), { status: 'playing', currentRound: 1 });
+  startRound(1);
+};
+
+async function startRound(roundNum) {
+  const snap = await get(ref(db, 'rooms/' + roomId));
+  const gd = snap.val();
+  const totalRounds = gd.rounds;
+  timerTotal = gd.timerSec || 60;
+  const imgIdx = (roundNum - 1) % images.length;
+  const shuffled = [...captions].sort(() => Math.random() - 0.5);
+  const roundCaptions = shuffled.slice(0, Math.min(6, captions.length));
+
+  const roundData = {
+    roundNum,
+    imageIdx: imgIdx,
+    captions: roundCaptions,
+    answers: {},
+    votes: {},
+    phase: 'choosing',
+    startedAt: Date.now()
+  };
+
+  await update(ref(db, 'rooms/' + roomId), { currentRound: roundNum, round: roundData });
+  showHostRound(roundNum, totalRounds, imgIdx, roundCaptions);
+  startRoundTimer();
+}
+
+function showHostRound(roundNum, totalRounds, imgIdx, roundCaptions) {
+  hide('s4-lobby'); hide('host-voting-card'); hide('host-results-card');
+  show('host-round-card');
+  setStatus('Kierros ' + roundNum);
+  document.getElementById('h-round-num').textContent = roundNum;
+  document.getElementById('h-total-rounds').textContent = totalRounds;
+  document.getElementById('answers-expected').textContent = Object.keys(players).length;
+  document.getElementById('answers-received').textContent = '0';
+
+  const img = images[imgIdx];
+  const memeDiv = document.getElementById('host-meme-img');
+  memeDiv.innerHTML = img
+    ? `<img src="${img.dataUrl}" alt="meme" />`
+    : '<div class="no-image-placeholder"><div class="big-icon">🖼️</div><p>Ei kuvaa</p></div>';
+
+  show('waiting-dots'); hide('vote-btn');
+
+  // Listen for answers
+  onValue(ref(db, 'rooms/' + roomId + '/round/answers'), (snap) => {
+    const answers = snap.val() || {};
+    const count = Object.keys(answers).length;
+    const el = document.getElementById('answers-received');
+    if (el) el.textContent = count;
+    if (count >= Object.keys(players).length && count > 0) {
+      hide('waiting-dots'); show('vote-btn');
+    }
+  });
+}
+
+function startRoundTimer() {
+  timerLeft = timerTotal;
+  updateTimerDisplay('h-timer', 'h-timer-bar', timerLeft, timerTotal);
+  clearInterval(roundTimer);
+  roundTimer = setInterval(() => {
+    timerLeft--;
+    updateTimerDisplay('h-timer', 'h-timer-bar', timerLeft, timerTotal);
+    if (timerLeft <= 0) { clearInterval(roundTimer); hide('waiting-dots'); show('vote-btn'); }
+  }, 1000);
+}
+
+function updateTimerDisplay(timerId, barId, left, total) {
+  const tEl = document.getElementById(timerId);
+  const bEl = document.getElementById(barId);
+  if (tEl) { tEl.textContent = left; tEl.className = 'round-timer' + (left <= 10 ? ' warning' : ''); }
+  if (bEl) { bEl.style.width = (left/total*100)+'%'; bEl.className = 'timer-bar' + (left <= 10 ? ' warning' : ''); }
+}
+
+window.startVoting = async function() {
+  clearInterval(roundTimer);
+  await update(ref(db, 'rooms/' + roomId + '/round'), { phase: 'voting' });
+  showHostVoting();
+};
+
+async function showHostVoting() {
+  hide('host-round-card');
+  show('host-voting-card');
+  setStatus('Äänestys');
+
+  const snap = await get(ref(db, 'rooms/' + roomId + '/round'));
+  const round = snap.val() || {};
+  const answers = round.answers || {};
+  const imgIdx = round.imageIdx || 0;
+  const img = images[imgIdx];
+  const answerArr = Object.values(answers);
+  const grid = document.getElementById('host-vote-grid');
+
+  if (answerArr.length === 0) {
+    grid.innerHTML = '<p style="color:#999">Ei vastauksia tällä kierroksella</p>';
+    show('results-btn'); return;
+  }
+
+  grid.innerHTML = answerArr.map((a,i) => `
+    <div class="vote-card">
+      <div class="vote-card-img">
+        ${img ? `<img src="${img.dataUrl}" alt="meme" />` : '<div style="padding:20px;color:#fff">🖼️</div>'}
+        <div class="meme-caption-overlay">${a.caption}</div>
+      </div>
+      <div class="vote-card-footer">
+        <span>${a.playerName}</span>
+        <span id="hvc-${i}">0 ääntä</span>
+      </div>
+    </div>
+  `).join('');
+
+  onValue(ref(db, 'rooms/' + roomId + '/round/votes'), (snap) => {
+    const votes = snap.val() || {};
+    const voteCounts = {};
+    Object.values(votes).forEach(v => { voteCounts[v] = (voteCounts[v]||0)+1; });
+    answerArr.forEach((a,i) => {
+      const el = document.getElementById('hvc-'+i);
+      if (el) el.textContent = (voteCounts[a.playerId]||0) + ' ääntä';
+    });
+    if (Object.keys(votes).length >= Object.keys(players).length) show('results-btn');
+  });
+}
+
+window.showRoundResults = async function() {
+  await update(ref(db, 'rooms/' + roomId + '/round'), { phase: 'results' });
+  hide('host-voting-card');
+  show('host-results-card');
+  setStatus('Tulokset');
+
+  const snap = await get(ref(db, 'rooms/' + roomId));
+  const gd = snap.val();
+  const round = gd.round || {};
+  const answers = round.answers || {};
+  const votes = round.votes || {};
+  const imgIdx = round.imageIdx || 0;
+  const img = images[imgIdx];
+
+  const voteCounts = {};
+  Object.values(votes).forEach(v => { voteCounts[v] = (voteCounts[v]||0)+1; });
+
+  const answerArr = Object.values(answers).map(a => ({
+    ...a, votes: voteCounts[a.playerId] || 0
+  })).sort((a,b) => b.votes - a.votes);
+
+  // Award points
+  for (const [i, a] of answerArr.entries()) {
+    const pts = i === 0 ? Math.max(a.votes * 2, 1) : a.votes;
+    const currentScore = (gd.players?.[a.playerId]?.score || 0);
+    await update(ref(db, 'rooms/' + roomId + '/players/' + a.playerId), { score: currentScore + pts });
+  }
+
+  // Refresh players
+  const snap2 = await get(ref(db, 'rooms/' + roomId + '/players'));
+  players = snap2.val() || {};
+
+  const winner = answerArr[0];
+  document.getElementById('round-winner-banner').innerHTML = winner && winner.votes > 0
+    ? `<div class="winner-banner">🏆 ${winner.playerName} voitti kierroksen!<br><span style="font-size:18px">"${winner.caption}"</span></div>`
+    : '<div class="winner-banner">Tasapeli! 🤝</div>';
+
+  document.getElementById('round-results-list').innerHTML = answerArr.map((a,i) => `
+    <div class="result-item">
+      ${img ? `<img src="${img.dataUrl}" style="width:60px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #111">` : ''}
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:14px">${a.playerName}</div>
+        <div style="font-size:13px;color:#555;font-family:'Bangers',cursive;letter-spacing:0.5px">"${a.caption}"</div>
+      </div>
+      <div class="result-votes">${a.votes} ääntä</div>
+    </div>
+  `).join('');
+
+  const playerArr = Object.entries(players).sort((a,b)=>(b[1].score||0)-(a[1].score||0));
+  const maxScore = Math.max(...playerArr.map(p=>p[1].score||0), 1);
+  document.getElementById('round-scoreboard').innerHTML = '<h3 style="margin-bottom:10px">Pisteet yhteensä</h3>' +
+    playerArr.map(([id,p],i) => `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="background:${getPlayerColor(i)};width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${initials(p.name)}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${p.name}</div>
+          <div class="timer-bar-wrap" style="margin-top:3px"><div class="score-bar" style="width:${((p.score||0)/maxScore*100)}%"></div></div>
+        </div>
+        <div style="font-weight:700;font-size:14px;min-width:32px;text-align:right">${p.score||0}</div>
+      </div>
+    `).join('');
+
+  if (round.roundNum >= gd.rounds) { hide('next-round-btn'); show('end-game-btn'); }
+  else { show('next-round-btn'); hide('end-game-btn'); }
+};
+
+window.nextRound = async function() {
+  const snap = await get(ref(db, 'rooms/' + roomId));
+  const gd = snap.val();
+  hide('host-results-card');
+  startRound((gd.currentRound || 1) + 1);
+};
+
+window.endGame = async function() {
+  await update(ref(db, 'rooms/' + roomId), { status: 'ended' });
+  hide('host-results-card');
+  show('host-final-card');
+  setStatus('Peli päättyi');
+
+  const snap = await get(ref(db, 'rooms/' + roomId));
+  const gd = snap.val();
+  const playerArr = Object.entries(gd.players || {}).sort((a,b)=>(b[1].score||0)-(a[1].score||0));
+  const medals = ['🥇','🥈','🥉'];
+  document.getElementById('final-results').innerHTML =
+    '<div class="winner-banner" style="margin-bottom:16px">🎉 ' + (playerArr[0]?.[1]?.name || '') + ' voitti pelin!</div>' +
+    playerArr.map(([id,p],i) => `
+      <div class="result-item">
+        <div class="result-rank">${medals[i]||'#'+(i+1)}</div>
+        <div style="background:${getPlayerColor(i)};width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">${initials(p.name)}</div>
+        <div style="flex:1;font-weight:600;font-size:16px">${p.name}</div>
+        <div class="result-votes">${p.score||0} pistettä</div>
+      </div>
+    `).join('');
+};
+
+window.resetGame = function() { location.reload(); };
+
+// ==================== GAME STATE LISTENER ====================
+function listenForGameUpdates() {
+  onValue(ref(db, 'rooms/' + roomId), (snap) => {
+    const gd = snap.val();
+    if (!gd) return;
+    players = gd.players || {};
+    renderPlayerList('player-list');
+    renderPlayerList('player-lobby-list');
+    const el = document.getElementById('player-count');
+    if (el) el.textContent = Object.keys(players).length;
+
+    if (!isHost && gd.round) {
+      const phase = gd.round.phase;
+      if (phase === 'choosing') {
+        hide('player-lobby');
+        show('player-choose-card');
+        showPlayerChoose(gd);
+      } else if (phase === 'voting') {
+        hide('player-choose-card');
+        hide('player-results-card');
+        show('player-voting-card');
+        showPlayerVoting(gd);
+      } else if (phase === 'results') {
+        hide('player-voting-card');
+        show('player-results-card');
+        showPlayerResults(gd);
+      }
+    }
+    if (!isHost && gd.status === 'ended') {
+      show('player-results-card');
+      showPlayerResults(gd, true);
+    }
+  });
+}
+
+// ==================== PLAYER SIDE ====================
+window.joinRoom = async function() {
+  const name = document.getElementById('player-name').value.trim();
+  const code = document.getElementById('room-code-input').value.trim().toUpperCase();
+
+  if (!name) { showJoinError('Kirjoita nimesi!'); return; }
+  if (code.length !== 4) { showJoinError('Koodi on 4 merkkiä pitkä'); return; }
+
+  // Join view needs Firebase too — try to init if not done
+  if (!db) {
+    show('join-fb-notice');
+    const joinApiKey = document.getElementById('join-fb-apikey').value.trim();
+    if (!joinApiKey) { showJoinError('Syötä myös Firebase API Key'); return; }
+    try {
+      const app = initializeApp({
+        databaseURL: 'https://memepeli-default-rtdb.firebaseio.com',
+        apiKey: joinApiKey,
+        projectId: 'memepeli'
+      }, 'join-' + Date.now());
+      db = getDatabase(app);
+    } catch(e) { showJoinError('Firebase-virhe: ' + e.message); return; }
+  }
+
+  try {
+    const roomSnap = await get(ref(db, 'rooms/' + code));
+    if (!roomSnap.exists()) { showJoinError('Huonetta ei löydy! Tarkista koodi.'); return; }
+    const gd = roomSnap.val();
+    if (gd.status === 'ended') { showJoinError('Peli on jo päättynyt.'); return; }
+
+    roomId = code;
+    myPlayerId = 'player-' + uid();
+    myPlayerName = name;
+    isHost = false;
+
+    images = gd.images || [];
+    captions = gd.captions || [];
+
+    const colorIdx = Object.keys(gd.players || {}).length;
+    await update(ref(db, 'rooms/' + roomId + '/players/' + myPlayerId), {
+      name, score: 0, colorIdx, joinedAt: Date.now()
+    });
+
+    hide('join-input-card');
+    show('player-lobby');
+    setStatus('Odotushuone');
+    listenForGameUpdates();
+  } catch(e) {
+    showJoinError('Virhe: ' + e.message);
+  }
+};
+
+function showJoinError(msg) {
+  const el = document.getElementById('join-error');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function showPlayerChoose(gd) {
+  const round = gd.round;
+  const img = images[round.imageIdx || 0];
+  timerTotal = gd.timerSec || 60;
+  document.getElementById('p-round-num').textContent = round.roundNum;
+
+  const memeDiv = document.getElementById('player-meme-img');
+  memeDiv.innerHTML = img ? `<img src="${img.dataUrl}" alt="meme" />` : '<div class="no-image-placeholder"><div class="big-icon">🖼️</div></div>';
+
+  const myAnswer = round.answers && round.answers[myPlayerId];
+  document.getElementById('player-caption-options').innerHTML = (round.captions || []).map((c,i) => `
+    <button class="caption-option ${myAnswer ? 'submitted' : ''} ${myAnswer && myAnswer.caption === c ? 'selected' : ''}"
+      onclick="submitAnswer(${JSON.stringify(c)}, this)">
+      ${c}
+    </button>
+  `).join('');
+
+  if (myAnswer) show('caption-submitted-msg');
+  else hide('caption-submitted-msg');
+
+  const elapsed = Math.floor((Date.now() - (round.startedAt || Date.now())) / 1000);
+  timerLeft = Math.max(0, timerTotal - elapsed);
+  updateTimerDisplay('p-timer', 'p-timer-bar', timerLeft, timerTotal);
+  clearInterval(roundTimer);
+  roundTimer = setInterval(() => {
+    timerLeft--;
+    updateTimerDisplay('p-timer', 'p-timer-bar', timerLeft, timerTotal);
+    if (timerLeft <= 0) clearInterval(roundTimer);
+  }, 1000);
+}
+
+window.submitAnswer = async function(caption, btn) {
+  if (!db) return;
+  await update(ref(db, 'rooms/' + roomId + '/round/answers/' + myPlayerId), {
+    caption, playerId: myPlayerId, playerName: myPlayerName, submittedAt: Date.now()
+  });
+  document.querySelectorAll('.caption-option').forEach(b => b.classList.add('submitted'));
+  if (btn) btn.classList.add('selected');
+  show('caption-submitted-msg');
+};
+
+function showPlayerVoting(gd) {
+  const round = gd.round;
+  const img = images[round.imageIdx || 0];
+  const answers = round.answers || {};
+  const answerArr = Object.values(answers).filter(a => a.playerId !== myPlayerId);
+  const myVote = round.votes && round.votes[myPlayerId];
+
+  document.getElementById('player-vote-options').innerHTML = answerArr.length === 0
+    ? '<p style="color:#999">Ei muiden vastauksia äänestettäväksi</p>'
+    : answerArr.map((a,i) => `
+      <div class="vote-card ${myVote === a.playerId ? 'voted' : ''}" onclick="submitVote('${a.playerId}', this)">
+        <div class="vote-card-img">
+          ${img ? `<img src="${img.dataUrl}" alt="meme" />` : '<div style="padding:20px;color:#fff">🖼️</div>'}
+          <div class="meme-caption-overlay">${a.caption}</div>
+        </div>
+        <div class="vote-card-footer"><span>${a.playerName}</span></div>
+      </div>
+    `).join('');
+
+  if (myVote) show('vote-submitted-msg');
+  else hide('vote-submitted-msg');
+}
+
+window.submitVote = async function(targetId, el) {
+  if (!db) return;
+  await update(ref(db, 'rooms/' + roomId + '/round/votes'), { [myPlayerId]: targetId });
+  document.querySelectorAll('.vote-card').forEach(c => c.classList.remove('voted'));
+  if (el) el.classList.add('voted');
+  show('vote-submitted-msg');
+};
+
+function showPlayerResults(gd, isFinal) {
+  const round = gd.round || {};
+  const answers = round.answers || {};
+  const votes = round.votes || {};
+  const img = images[round.imageIdx || 0];
+  const voteCounts = {};
+  Object.values(votes).forEach(v => { voteCounts[v] = (voteCounts[v]||0)+1; });
+  const answerArr = Object.values(answers).map(a => ({ ...a, votes: voteCounts[a.playerId]||0 })).sort((a,b)=>b.votes-a.votes);
+  const playerArr = Object.entries(gd.players || {}).sort((a,b)=>(b[1].score||0)-(a[1].score||0));
+
+  let html = '';
+  if (answerArr[0]?.votes > 0) html += `<div class="winner-banner" style="margin-bottom:12px">🏆 ${answerArr[0].playerName} voitti!</div>`;
+  html += answerArr.map(a => `
+    <div class="result-item">
+      ${img ? `<img src="${img.dataUrl}" style="width:50px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #111">` : ''}
+      <div style="flex:1"><div style="font-weight:600;font-size:13px">${a.playerName}</div><div style="font-size:12px;color:#555">"${a.caption}"</div></div>
+      <div class="result-votes">${a.votes}</div>
+    </div>
+  `).join('');
+
+  if (isFinal || gd.status === 'ended') {
+    const medals = ['🥇','🥈','🥉'];
+    html += '<h3 style="margin:16px 0 10px">Lopputulokset</h3>';
+    html += playerArr.map(([id,p],i) => `
+      <div class="result-item">
+        <div class="result-rank">${medals[i]||'#'+(i+1)}</div>
+        <div style="flex:1;font-weight:600">${p.name}${id===myPlayerId?' (sinä)':''}</div>
+        <div class="result-votes">${p.score||0} pistettä</div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('player-results-content').innerHTML = html;
+}
+
+// ==================== URL PARAMS ====================
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const roomParam = params.get('room');
+  if (roomParam) {
+    showView('join');
+    const rc = document.getElementById('room-code-input');
+    if (rc) rc.value = roomParam.toUpperCase();
+    show('join-fb-notice');
+  }
+})();
+</script>
+</body>
+</html>
